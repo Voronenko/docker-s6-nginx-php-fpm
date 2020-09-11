@@ -6,8 +6,21 @@ RUN apk --no-cache add bind-tools binutils bash curl ca-certificates git tzdata
 
 ARG S6_OVERLAY_VERSION="v2.0.0.1"
 ARG NGINX_VERSION="1.14.2"
-ARG XDEBUG_VERSION="2.9.1"
+ARG XDEBUG_VERSION="2.9.6"
 ARG PHPREDIS_VERSION="4.2.0"
+
+ARG USER=ubuntu
+ARG UID=1000
+ARG GID=1000
+ARG PW=q
+
+# ubuntu favour
+#RUN useradd -m ${USER} --uid=${UID} && echo "${USER}:${PW}" | \
+#      chpasswd
+
+# alpine favour
+RUN addgroup -g ${GID} ${USER} && \
+    adduser -D -u ${UID} -G ${USER} ${USER} -h /home/ubuntu
 
 RUN curl -sSL https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/s6-overlay-amd64.tar.gz | tar xfz - -C /
 
@@ -101,12 +114,21 @@ RUN docker-php-source extract \
 
 RUN curl -sSL https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+RUN rm /etc/nginx/conf.d/default.conf || true
+
 ADD root /
 
 RUN chown -R nginx: /home/nginx \
     && update-ca-certificates
 
-WORKDIR /data
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.7.3/wait /usr/bin/wait
+RUN chmod +x /usr/bin/wait
+
+ADD https://github.com/kreuzwerker/envplate/releases/download/v0.0.8/ep-linux /usr/local/bin/ep
+RUN chmod +x /usr/local/bin/ep
+
+
+WORKDIR /app
 
 ENTRYPOINT []
 CMD ["/init"]
