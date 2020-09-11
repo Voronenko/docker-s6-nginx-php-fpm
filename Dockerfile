@@ -130,5 +130,7 @@ RUN chmod +x /usr/local/bin/ep
 
 WORKDIR /app
 
+ENV PATH "/home/ubuntu/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
 ENTRYPOINT []
 CMD ["/init"]
